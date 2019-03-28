@@ -7,28 +7,35 @@
 
 import heapq
 
-class ctNode:
-    def __init__(self, city, distance):
-        self.city = str(city)
-        self.distance = str(distance)
 
 class priorityQueue:
     def __init__(self):
-        self.cities=[]
+        self.cities = []
 
     def push(self, city, cost):
         heapq.heappush(self.cities, (cost, city))
 
     def pop(self):
-        return  heapq.heappop(self.cities)[1]
+        return heapq.heappop(self.cities)[1]
 
     def isEmpty(self):
-        if(self.cities == []):
+        if (self.cities == []):
             return True
         else:
             return False
 
+    def check(self):
+        print(self.cities)
+
+
+class ctNode:
+    def __init__(self, city, distance):
+        self.city = str(city)
+        self.distance = str(distance)
+
+
 romania = {}
+
 
 def makedict():
     file = open("romania.txt", 'r')
@@ -40,6 +47,7 @@ def makedict():
         romania.setdefault(ct1, []).append(ctNode(ct2, dist))
         romania.setdefault(ct2, []).append(ctNode(ct1, dist))
 
+
 def makehuristikdict():
     h = {}
     with open("romania_sld.txt", 'r') as file:
@@ -50,31 +58,38 @@ def makehuristikdict():
             h[node] = sld
     return h
 
+
 def heuristic(node, values):
     return values[node]
 
-def astar(start, end, visited, path, distance):
+
+def astar(start, end):
+    path = {}
+    distance = {}
     q = priorityQueue()
-    q.push(start, 0)
-    distance[start] = 0
-    expandedList = []
-    path[start]= None
     h = makehuristikdict()
 
-    while(q.isEmpty() == False):
+    q.push(start, 0)
+    distance[start] = 0
+    path[start] = None
+    expandedList = []
+
+    while (q.isEmpty() == False):
         current = q.pop()
         expandedList.append(current)
 
-        if(current == end):
+        if (current == end):
             break
 
         for new in romania[current]:
-            updatedDistance = distance[current] + int(new.distance)
+            g_cost = distance[current] + int(new.distance)
 
-            if(new.city not in distance or updatedDistance < distance[new.city]):
-                distance[new.city] = updatedDistance
-                priority = updatedDistance + heuristic(new.city, h)
-                q.push(new.city, priority)
+            # print(new.city, new.distance, "now : " + str(distance[current]), g_cost)
+
+            if (new.city not in distance or g_cost < distance[new.city]):
+                distance[new.city] = g_cost
+                f_cost = g_cost + heuristic(new.city, h)
+                q.push(new.city, f_cost)
                 path[new.city] = current
 
     printoutput(start, end, path, distance, expandedList)
@@ -89,25 +104,23 @@ def printoutput(start, end, path, distance, expandedlist):
         i = path[i]
     finalpath.append(start)
     finalpath.reverse()
-    print("Kota yg mungkin dijelajah: " + str(expandedlist))
-    print("Jumlah kemungkinan kota: " + str(len(expandedlist)))
-    print("Daftar final kota yang dilewati: " + str(finalpath))
-    print("Jumlah kota: " + str(len(finalpath)))
-    print("Total jarak: " + str(distance[end]))
+    print("Program algoritma Astar untuk masalah Romania")
+    print("\tArad => Bucharest")
+    print("=======================================================")
+    print("Kota yg mungkin dijelajah \t\t: " + str(expandedlist))
+    print("Jumlah kemungkinan kota \t\t: " + str(len(expandedlist)))
+    print("=======================================================")
+    print("Kota yg dilewati dg jarak terpendek\t: " + str(finalpath))
+    print("Jumlah kota yang dilewati \t\t\t: " + str(len(finalpath)))
+    print("Total jarak \t\t\t\t\t\t: " + str(distance[end]))
 
 
 def main():
     src = "Arad"
     dst = "Bucharest"
-
     makedict()
-    visited = []
-    path = {}
-    distance = {}
-    astar(src, dst, visited, path, distance)
+    astar(src, dst)
 
 
 if __name__ == "__main__":
     main()
-
-
